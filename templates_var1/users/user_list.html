@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Пользователи</h1>
+    
+    {% if user.is_authenticated %}
+    <div class="filters">
+        <h3>Фильтрация</h3>
+        <div class="filter-buttons">
+            <a href="?filter=favorite_authors" class="filter-btn {% if active_filter == 'favorite_authors' %}active{% endif %}">
+                Авторы избранных проектов
+            </a>
+            <a href="?filter=my_participants" class="filter-btn {% if active_filter == 'my_participants' %}active{% endif %}">
+                Авторы проектов, в которых я участвую
+            </a>
+            <a href="?filter=liked_my_projects" class="filter-btn {% if active_filter == 'liked_my_projects' %}active{% endif %}">
+                Пользователи, которым нравятся мои проекты
+            </a>
+            <a href="?filter=my_project_members" class="filter-btn {% if active_filter == 'my_project_members' %}active{% endif %}">
+                Участники моих проектов
+            </a>
+            {% if active_filter %}
+                <a href="?" class="filter-btn clear">Сбросить фильтр</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="users-list">
+        {% for user_item in users %}
+        <div class="user-item">
+            <div class="user-avatar">👤</div>
+            <div class="user-details">
+                <a href="{% url 'user_profile' user_item.id %}" class="profile-link">
+                    {{ user_item.get_full_name|default:user_item.email }}
+                </a>
+                <div class="user-contacts">
+                    {% if user_item.email %}📧 {{ user_item.email }}{% endif %}
+                    {% if user_item.phone %} | 📱 {{ user_item.phone }}{% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p>Нет пользователей, соответствующих фильтру.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .users-list { margin-top: 20px; }
+    .user-item { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; }
+    .user-avatar { font-size: 45px; }
+    .user-details { flex: 1; }
+    .profile-link { font-size: 18px; font-weight: bold; color: #0066cc; text-decoration: none; }
+    .profile-link:hover { text-decoration: underline; }
+    .user-contacts { font-size: 13px; color: #666; margin-top: 5px; }
+    .filters { background: #f7f7f7; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .filter-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    .filter-btn { padding: 8px 15px; background: #e2e8f0; text-decoration: none; color: #333; border-radius: 20px; }
+    .filter-btn:hover { background: #cbd5e0; }
+    .filter-btn.active { background: #4a5568; color: white; }
+    .filter-btn.clear { background: #f8d7da; color: #721c24; }
+</style>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Вход в систему</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-error">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Пароль:</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+    
+    <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+</div>
+
+<style>
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    .btn-primary { background: #4a5568; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+    .alert { padding: 10px; background: #f8d7da; border-radius: 5px; color: #721c24; margin-bottom: 20px; }
+</style>
+{% endblock %}

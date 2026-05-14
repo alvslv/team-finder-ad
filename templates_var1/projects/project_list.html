@@ -1,49 +1,94 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Актуальные проекты{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/project_list.css' %}">
-{% endblock %}
-
-{% with page_id="projects-list" %}
 {% block content %}
-<div class="project-container">
-    <div class="project-header">
-        <h2 class="project-title">Актуальные проекты</h2>
-        {% if projects %}
-            <a href="/projects/create-project" class="black-button">+ Создать проект</a>
-        {% endif %}
-    </div>
-    <p class="project-subtitle">Найдите интересный проект и присоединитесь к команде</p>
-
+<div class="container">
+    <h1>Актуальные проекты</h1>
     <div class="projects-grid">
-        {% for project in page_obj %}
-        {% include 'includes/project-card.html' %}
+        {% for project in projects %}
+        <div class="project-card">
+            <div class="project-card-header">
+                <div class="project-owner">
+                    <a href="{% url 'user_profile' project.owner.id %}">
+                        {{ project.owner.get_full_name|default:project.owner.email }}
+                    </a>
+                    <small>{{ project.created_at|date:"d.m.Y" }}</small>
+                </div>
+                {% if user.is_authenticated %}
+                <button class="fav-btn" data-project-id="{{ project.id }}" data-is-fav="{% if project.id in favorites_ids %}true{% else %}false{% endif %}">
+                    {% if project.id in favorites_ids %}❤️{% else %}🤍{% endif %}
+                </button>
+                {% endif %}
+            </div>
+            <h3><a href="{% url 'project_detail' project.id %}">{{ project.name }}</a></h3>
+            <p>{{ project.description|truncatechars:150 }}</p>
+            <div class="project-footer">
+                <span class="status {{ project.status }}">{{ project.get_status_display }}</span>
+            </div>
+        </div>
         {% empty %}
-        {% include 'includes/empty-project-card.html' with empty_title="Пока нет проектов" empty_message="Создавайте проекты и делитесь ими с другими пользователями!" button_link="/projects/create-project" button_text="+ Создать проект" %}
+        <p>Нет проектов. <a href="{% url 'project_create' %}">Создайте первый проект!</a></p>
         {% endfor %}
     </div>
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-        <a href="?{{ query_prefix }}page={{ page_obj.previous_page_number }}" class="page-btn">←</a>
-        {% endif %}
-        {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-        <span class="page-btn active">{{ num }}</span>
-        {% else %}
-        <a href="?{{ query_prefix }}page={{ num }}" class="page-btn">{{ num }}</a>
-        {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-        <a href="?{{ query_prefix }}page={{ page_obj.next_page_number }}" class="page-btn">→</a>
-        {% endif %}
-    </div>
-    {% endif %}
-    {% include 'includes/project-fav-toggle.js' %}
 </div>
 
+<style>
+    .projects-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    .project-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; }
+    .project-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .fav-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .status.open { background: #d4edda; color: #155724; }
+    .status.closed { background: #f8d7da; color: #721c24; }
+</style>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.fav-btn');
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const projectId = this.dataset.projectId;
+            const isFav = this.dataset.isFav === 'true';
+            
+            fetch(`/projects/${projectId}/toggle-favorite/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    if (data.favorited) {
+                        this.innerHTML = '❤️';
+                        this.dataset.isFav = 'true';
+                    } else {
+                        this.innerHTML = '🤍';
+                        this.dataset.isFav = 'false';
+                    }
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+        });
+    });
+});
+</script>
 {% endblock %}
-{% endwith %}

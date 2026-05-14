@@ -1,125 +1,129 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}{{ project.name }}{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/project_details.css' %}">
-{% endblock %}
-
-{% with page_id="project" %}
 {% block content %}
-<div class="project-container">
-    <div class="project-card">
-        <div class="project-card-header">
-            <a href="/users/{{ project.owner.id }}">
-                <div class="project-card-header-left">
-                    {% if project.owner.avatar %}
-                        <img src="{{ project.owner.avatar.url }}" alt="Аватар автора" class="project-author-avatar">
-                    {% else %}
-                        <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию" class="project-author-avatar">
-                    {% endif %}
-                    <div class="project-meta">
-                        <span class="project-author">{{ project.owner.name }} {{ project.owner.surname }}</span>
-                        <span class="project-date">{{ project.created_at|date:"d.m.Y" }}</span>
-                    </div>
-                </div>
-            </a>
-            <div class="project-card-header-right">
-                <span class="project-status-black">
-                    {% if project.status == "open" %}
-                        Открыт
-                    {% elif project.status == "closed" %}
-                        Закрыт
-                    {% else %}
-                        {{ project.status }}
-                    {% endif %}
-                </span>
-            </div>
-        </div>
-
-        <div class="project-card-body">
-                <h2 class="project-title">{{ project.name }}</h2>
-                <p class="project-description">{{ project.description }}</p>
-
-                {% if project.github_url %}
-                <p class="project-link">
-                    {% include 'includes/svg/github.html' %}
-                    <a href="{{ project.github_url }}" target="_blank">Репозиторий на GitHub</a>
-                </p>
-                {% endif %}
-        </div>
-        <div class="project-actions">
-            {% if user.is_authenticated %}
-            <button
-                    class="black-button project-fav-icon {% if project in user.favorites.all %}favorite{% else %}not-favorite{% endif %}"
-                    data-project-id="{{ project.id }}"
-                    data-fav="{% if project in user.favorites.all %}true{% else %}false{% endif %}"
-                    title="Добавить в избранное"
-            >
-                {% include 'includes/svg/heart.html' %}
-            </button>
-            {% endif %}
-            <a href="#"
-               class="black-button black-button-share share-button"
-               data-url="/projects/{{ project.id }}">
-                {% include 'includes/svg/share.html' %}
-            </a>
-            {% if user.id == project.owner.id %}
-                <a href="/projects/{{ project.id }}/edit" class="black-button">
-                    {% include 'includes/svg/pen.html' %}
-                    Редактировать
-                </a>
-                {% if project.status == "open" %}
-                    <button class="black-button" id="complete-project-btn" data-id="{{ project.id }}">
-                        Завершить проект
-                    </button>
-                {% endif %}
-            {% else %}
-                {% if user.is_authenticated %}
-                    <button id="participate-btn" class="black-button"
-                            data-project="{{ project.id }}"
-                            data-user-id="{{ request.user.id }}"
-                            data-user-name="{{ request.user.name }} {{ request.user.surname }}"
-                            data-user-avatar="{% if request.user.avatar %}{{ request.user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
-                    >
-                        {% if request.user in project.participants.all %}
-                            Отказаться от участия
-                        {% else %}
-                            Участвовать
-                        {% endif %}
-                    </button>
-                {% endif %}
-            {% endif %}
-        </div>
-
-    </div>
-
-    <div class="project-participants-card">
-    <h3>Участники проекта (<span id="participants-count" style="display:inline">{{ project.participants.all|length }}</span>)</h3>
-    <div id="participants-list" class="participants-list">
-        {% for member in project.participants.all %}
-        <a href="/users/{{ member.id }}" id="participant-{{ member.id }}">
-            <div class="participant-item">
-                {% if member.avatar %}
-                    <img src="{{ member.avatar.url }}" alt="Аватар" class="participant-avatar">
+<div class="container">
+    <div class="project-detail">
+        <h1>{{ project.name }}</h1>
+        
+        <div class="project-meta">
+            <p><strong>Автор:</strong> 
+                {% if project.owner and project.owner.id %}
+                    <a href="{% url 'user_profile' project.owner.id %}">
+                        {{ project.owner.get_full_name|default:project.owner.email }}
+                    </a>
                 {% else %}
-                    <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию" class="participant-avatar">
+                    {{ project.owner.email|default:"Автор не указан" }}
                 {% endif %}
-                <div class="participant-info">
-                    <span class="participant-name">{{ member.name }} {{ member.surname }}</span>
-                    <span class="participant-role">
-                        {% if member.id == project.owner.id %}Автор проекта{% else %}Участник{% endif %}
-                    </span>
-                </div>
-            </div>
-        </a>
-        {% empty %}
-        <p id="no-participants">Пока нет участников</p>
-        {% endfor %}
+            </p>
+            <p><strong>Дата создания:</strong> {{ project.created_at|date:"d.m.Y" }}</p>
+            <p><strong>Статус:</strong> 
+                <span class="status {{ project.status }}">
+                    {{ project.get_status_display }}
+                </span>
+            </p>
         </div>
+        
+        <div class="project-description">
+            <h3>Описание</h3>
+            <p>{{ project.description|linebreaks|default:"Нет описания" }}</p>
+        </div>
+        
+        {% if project.github_url %}
+        <div class="project-github">
+            <h3>GitHub</h3>
+            <p><a href="{{ project.github_url }}" target="_blank">{{ project.github_url }}</a></p>
+        </div>
+        {% endif %}
+        
+        {% if user == project.owner %}
+            <div class="project-actions">
+                <a href="{% url 'project_edit' project.id %}" class="btn btn-edit">Редактировать</a>
+                {% if project.status == 'open' %}
+                    <a href="{% url 'project_complete' project.id %}" class="btn btn-complete">Завершить проект</a>
+                {% endif %}
+            </div>
+        {% elif user.is_authenticated and user != project.owner %}
+            <a href="{% url 'join_project' project.id %}" class="btn btn-join">Присоединиться к проекту</a>
+        {% endif %}
+        
+        {% if project.participants.exists %}
+        <div class="participants-list">
+            <h3>Участники проекта ({{ project.participants.count }})</h3>
+            <ul>
+                {% for participant in project.participants.all %}
+                    <li><a href="{% url 'user_profile' participant.id %}">{{ participant.get_full_name|default:participant.email }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </div>
-    {% include 'includes/project-fav-toggle.js' %}
 </div>
+
+<style>
+    .project-detail {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .project-meta {
+        background: #f7f7f7;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    .project-description, .project-github {
+        margin: 30px 0;
+    }
+    .status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .status.open {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status.closed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .project-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-edit {
+        background: #4a5568;
+        color: white;
+    }
+    .btn-complete {
+        background: #dc3545;
+        color: white;
+    }
+    .btn-join {
+        background: #28a745;
+        color: white;
+    }
+    .participants-list {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+    .participants-list ul {
+        list-style: none;
+        padding: 0;
+    }
+    .participants-list li {
+        padding: 5px 0;
+    }
+</style>
 {% endblock %}
-{% endwith %}
