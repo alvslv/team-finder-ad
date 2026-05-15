@@ -4,19 +4,19 @@
 <header class="site-header">
     <div class="container">
         <div class="header-content">
-            <a href="{% url 'project_list' %}" class="logo-link">TeamFinder</a>
+            <a href="{% url 'projects:project_list' %}" class="logo-link">TeamFinder</a>
 
             <nav class="main-nav">
-                <a href="{% url 'project_list' %}" class="nav-link">
+                <a href="{% url 'projects:project_list' %}" class="nav-link">
                     {% include 'includes/svg/home.html' %}
                     <p>Главная</p>
                 </a>
-                <a href="{% url 'user_list' %}" class="nav-link">
+                <a href="{% url 'users:user_list' %}" class="nav-link">
                     {% include 'includes/svg/participants.html' %}
                     <p>Участники</p>
                 </a>
                 {% if request.user.is_authenticated %}
-                <a href="{% url 'favorite_projects' %}" class="nav-link">
+                <a href="{% url 'projects:favorite_projects' %}" class="nav-link">
                     {% include 'includes/svg/heart.html' %}
                     <p>Избранное</p>
                 </a>
@@ -25,24 +25,24 @@
 
             <div class="user-actions">
                 {% if request.user.is_authenticated %}
-                <a href="/projects/create-project/" class="button nav-link black">
+                <a href="{% url 'projects:project_create' %}" class="button nav-link black">
                     {% include 'includes/svg/plus.html' %}
                     <p>Создать проект</p>
                 </a>
-                <a class="user-menu nav-link">
+                <a class="user-menu nav-link" id="userMenuBtn">
                     {% if request.user.avatar %}
-                        <img src="{{ request.user.avatar.url }}" alt="Аватар" class="avatar">
+                        <img src="{{ request.user.avatar }}" alt="Аватар" class="avatar">
                     {% else %}
                         <img src="{% static 'images/default-avatar.png' %}" alt="Аватар по умолчанию" class="avatar">
                     {% endif %}
                     <span class="username">{{ request.user.get_full_name|default:request.user.email }}</span>
                 </a>
                 {% else %}
-                <button class="button button-login nav-link" onclick="window.location.href='{% url 'login' %}'">
+                <button class="button button-login nav-link" onclick="window.location.href='{% url 'users:login' %}'">
                     {% include 'includes/svg/login.html' %}
                     <p>Войти</p>
                 </button>
-                <button class="button button-register nav-link black" onclick="window.location.href='{% url 'register' %}'">
+                <button class="button button-register nav-link black" onclick="window.location.href='{% url 'users:register' %}'">
                     {% include 'includes/svg/register.html' %}
                     <p>Регистрация</p>
                 </button>
@@ -53,54 +53,68 @@
 </header>
 
 {% if request.user.is_authenticated %}
-<div id="userSidebar" class="user-sidebar">
+<div id="userSidebar" class="user-sidebar" style="display: none;">
     <div class="sidebar-content">
-        <a href="{% url 'user_profile' request.user.id %}"><span>{% include 'includes/svg/profile.html' %} Мой профиль</span></a>
-        <a href="/users/edit-profile/"><span>{% include 'includes/svg/settings.html' %} Редактировать профиль</span></a>
-        <a href="{% url "password_change" %}"><span>{% include 'includes/svg/lock.html' %} Сменить пароль</span></a>
+        <a href="{% url 'users:user_profile' request.user.id %}"><span>{% include 'includes/svg/profile.html' %} Мой профиль</span></a>
+        <a href="{% url 'users:edit_profile' %}"><span>{% include 'includes/svg/settings.html' %} Редактировать профиль</span></a>
+        <a href="{% url 'users:change_password' %}"><span>{% include 'includes/svg/lock.html' %} Сменить пароль</span></a>
         <a href="#"
            class="share-button"
-           data-url="{% url 'user_profile' request.user.id %}">
+           data-url="{% url 'users:user_profile' request.user.id %}">
             {% include 'includes/svg/share.html' %} Поделиться профилем
         </a>
         <hr class="sidebar-divider">
-        <a href="{% url 'logout' %}"><span style="color: #e7000b;">{% include 'includes/svg/leave.html' %} Выйти</span></a>
+        <a href="{% url 'users:logout' %}"><span style="color: #e7000b;">{% include 'includes/svg/leave.html' %} Выйти</span></a>
     </div>
 </div>
 {% endif %}
 
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    const logoutLink = document.querySelector('a[href="{% url "logout" %}"]');
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userSidebar = document.getElementById('userSidebar');
+    
+    if (userMenuBtn && userSidebar) {
+        userMenuBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (userSidebar.style.display === 'none') {
+                userSidebar.style.display = 'block';
+            } else {
+                userSidebar.style.display = 'none';
+            }
+        });
+    }
+    
+    const logoutLink = document.querySelector('a[href="{% url "users:logout" %}"]');
     if (logoutLink) {
         logoutLink.addEventListener('click', function(e) {
             e.preventDefault();
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{% url "logout" %}';
+            form.action = '{% url "users:logout" %}';
             const csrf = document.createElement('input');
             csrf.type = 'hidden';
             csrf.name = 'csrfmiddlewaretoken';
-            csrf.value = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCsrfToken();
+            csrf.value = getCookie('csrftoken');
             form.appendChild(csrf);
             document.body.appendChild(form);
             form.submit();
         });
-    }
-    
-    function getCsrfToken() {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, 10) === ('csrftoken' + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(10));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
 });
 </script>

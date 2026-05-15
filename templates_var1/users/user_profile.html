@@ -19,7 +19,7 @@
                 {% endif %}
             </div>
             {% if request.user == user_profile %}
-                <a href="{% url 'edit_profile' %}" class="btn-edit">Редактировать профиль</a>
+                <a href="{% url 'users:edit_profile' %}" class="btn-edit">Редактировать профиль</a>
             {% endif %}
         </div>
 
@@ -42,7 +42,7 @@
             <h2>Проекты пользователя</h2>
             <div class="projects-grid">
                 {% for project in user_profile.owned_projects.all %}
-                    <div class="project-card" onclick="window.location.href='{% url 'project_detail' project.id %}'" style="cursor: pointer;">
+                    <div class="project-card" onclick="window.location.href='{% url 'projects:project_detail' project.id %}'" style="cursor: pointer;">
                         <h3>{{ project.name }}</h3>
                         <p>{{ project.description|truncatechars:100 }}</p>
                         <div class="project-footer">

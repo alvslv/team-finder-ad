@@ -27,24 +27,38 @@
     </div>
     {% endif %}
     
-    <div class="users-list">
-        {% for user_item in users %}
-        <div class="user-item">
-            <div class="user-avatar">👤</div>
-            <div class="user-details">
-                <a href="{% url 'user_profile' user_item.id %}" class="profile-link">
-                    {{ user_item.get_full_name|default:user_item.email }}
-                </a>
-                <div class="user-contacts">
-                    {% if user_item.email %}📧 {{ user_item.email }}{% endif %}
-                    {% if user_item.phone %} | 📱 {{ user_item.phone }}{% endif %}
+    {% if page_obj %}
+        <div class="users-list">
+            {% for user_item in page_obj %}
+            <div class="user-item">
+                <div class="user-avatar">👤</div>
+                <div class="user-details">
+                    <a href="{% url 'users:user_profile' user_item.id %}" class="profile-link">
+                        {{ user_item.get_full_name|default:user_item.email }}
+                    </a>
+                    <div class="user-contacts">
+                        {% if user_item.email %}📧 {{ user_item.email }}{% endif %}
+                        {% if user_item.phone %} | 📱 {{ user_item.phone }}{% endif %}
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-            <p>Нет пользователей, соответствующих фильтру.</p>
-        {% endfor %}
-    </div>
+        
+        {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if active_filter %}&filter={{ active_filter }}{% endif %}">← Предыдущая</a>
+            {% endif %}
+            <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if active_filter %}&filter={{ active_filter }}{% endif %}">Следующая →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <p>Нет пользователей</p>
+    {% endif %}
 </div>
 
 <style>
@@ -61,5 +75,7 @@
     .filter-btn:hover { background: #cbd5e0; }
     .filter-btn.active { background: #4a5568; color: white; }
     .filter-btn.clear { background: #f8d7da; color: #721c24; }
+    .pagination { text-align: center; margin-top: 20px; }
+    .pagination a { margin: 0 10px; text-decoration: none; }
 </style>
 {% endblock %}
