@@ -1,6 +1,8 @@
 from .models import Project
 
 
-def get_optimized_projects_queryset():
+def get_optimized_projects_queryset(queryset=None):
     """Возвращает оптимизированный queryset проектов с подгрузкой связанных данных."""
-    return Project.objects.select_related('owner').prefetch_related('participants')
+    if queryset is None:
+        queryset = Project.objects.all()
+    return queryset.select_related('owner').prefetch_related('participants')

@@ -1,5 +1,7 @@
 """Константы для всего проекта."""
 
+from enum import StrEnum
+
 # Длины полей для модели User
 MAX_LENGTH_NAME = 124
 MAX_LENGTH_SURNAME = 124
@@ -25,13 +27,27 @@ DEFAULT_AVATAR_SIZE = 120
 PROJECTS_PER_PAGE = 12
 USERS_PER_PAGE = 12
 
-# Длины полей
-MAX_LENGTH_NAME = 124
-MAX_LENGTH_SURNAME = 124
-MAX_LENGTH_PROJECT_NAME = 200
+# Цвета для аватара (мягкие тона)
+class AvatarColor(StrEnum):
+    """Цвета для фона аватара."""
+    GRAY = '4a5568'
+    DARK_GRAY = '2d3748'
+    DARK_BLUE = '1a365d'
+    GREEN = '22543d'
+    RED = '9b2c2c'
+    BROWN = '744210'
+    BLUE = '2c5282'
+    TEAL = '285e61'
 
-# Параметры аватара
-DEFAULT_AVATAR_SIZE = 120
+
+# Список цветов для случайного выбора
 AVATAR_BG_COLORS = [
-    '4a5568', '2d3748', '1a365d', '22543d', '9b2c2c', '744210', '2c5282', '285e61'
+    AvatarColor.GRAY,
+    AvatarColor.DARK_GRAY,
+    AvatarColor.DARK_BLUE,
+    AvatarColor.GREEN,
+    AvatarColor.RED,
+    AvatarColor.BROWN,
+    AvatarColor.BLUE,
+    AvatarColor.TEAL,
 ]

@@ -1,13 +1,16 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.generic import CreateView, UpdateView
-from django.urls import reverse_lazy
+
 from core.constants import PROJECTS_PER_PAGE, STATUS_CLOSED, STATUS_OPEN
-from .models import Project
+from core.services import paginate
+
 from .forms import ProjectForm
+from .models import Project
 from .utils import get_optimized_projects_queryset
 
 
@@ -16,9 +19,7 @@ def project_list(request):
     favorites_ids = []
     if request.user.is_authenticated:
         favorites_ids = request.user.favorites.values_list('id', flat=True)
-    paginator = Paginator(projects, PROJECTS_PER_PAGE)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate(projects, PROJECTS_PER_PAGE, request.GET.get('page'))
     return render(request, 'projects/project_list.html', {
         'page_obj': page_obj,
         'favorites_ids': list(favorites_ids),
@@ -35,6 +36,9 @@ class ProjectCreateView(CreateView):
     form_class = ProjectForm
     template_name = 'projects/create-project.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
         response = super().form_valid(form)
@@ -43,7 +47,7 @@ class ProjectCreateView(CreateView):
         return response
 
     def get_success_url(self):
-        return reverse_lazy('projects:project_detail', kwargs={'project_id': self.object.id})
+        return reverse('projects:project_detail', kwargs={'project_id': self.object.id})
 
 
 class ProjectUpdateView(UpdateView):
@@ -59,7 +63,7 @@ class ProjectUpdateView(UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('projects:project_detail', kwargs={'project_id': self.object.id})
+        return reverse('projects:project_detail', kwargs={'project_id': self.object.id})
 
 
 @login_required
@@ -74,7 +78,7 @@ def project_complete(request, project_id):
 
 @login_required
 def favorite_projects(request):
-    favorites = request.user.favorites.select_related('owner').prefetch_related('participants').all()
+    favorites = get_optimized_projects_queryset(request.user.favorites.all())
     return render(request, 'projects/favorite_projects.html', {'favorites': favorites})
 
 

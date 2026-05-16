@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 from core.constants import MAX_LENGTH_NAME, MAX_LENGTH_SURNAME
 from core.validators import validate_github_url
+
 from .models import User
 
 

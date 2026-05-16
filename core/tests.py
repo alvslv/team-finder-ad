@@ -4,20 +4,20 @@
 
 from django.test import TestCase
 
-from core.validators import validate_github_url, phone_validator
-from core.services import generate_avatar
 from core.constants import (
-    MAX_LENGTH_NAME,
-    MAX_LENGTH_SURNAME,
-    MAX_LENGTH_PHONE,
     MAX_LENGTH_ABOUT,
+    MAX_LENGTH_NAME,
+    MAX_LENGTH_PHONE,
     MAX_LENGTH_PROJECT_NAME,
-    STATUS_OPEN,
-    STATUS_CLOSED,
-    STATUS_CHOICES,
+    MAX_LENGTH_SURNAME,
     PROJECTS_PER_PAGE,
+    STATUS_CHOICES,
+    STATUS_CLOSED,
+    STATUS_OPEN,
     USERS_PER_PAGE,
 )
+from core.services import generate_avatar
+from core.validators import phone_validator, validate_github_url
 
 
 class ConstantsTest(TestCase):

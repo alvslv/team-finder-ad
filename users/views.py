@@ -1,17 +1,18 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
-from django.core.paginator import Paginator
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import get_user_model
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.generic import CreateView, UpdateView
+
 from core.constants import USERS_PER_PAGE
 from projects.models import Project
-from .models import User
+
 from .forms import RegisterForm, UserProfileForm
+from .models import User
 
 UserModel = get_user_model()
 
@@ -19,7 +20,9 @@ UserModel = get_user_model()
 class RegisterView(CreateView):
     form_class = RegisterForm
     template_name = 'registration/register.html'
-    success_url = reverse_lazy('projects:project_list')
+
+    def get_success_url(self):
+        return reverse('projects:project_list')
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -33,7 +36,7 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        return reverse_lazy('projects:project_list')
+        return reverse('projects:project_list')
 
     def form_invalid(self, form):
         messages.error(self.request, 'Неверный email или пароль.')
@@ -42,14 +45,13 @@ class CustomLoginView(LoginView):
 
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'registration/password_change_form.html'
-    success_url = reverse_lazy('users:user_profile')
+
+    def get_success_url(self):
+        return reverse('users:user_profile', kwargs={'user_id': self.request.user.id})
 
     def form_valid(self, form):
         messages.success(self.request, 'Пароль успешно изменён!')
         return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy('users:user_profile', kwargs={'user_id': self.request.user.id})
 
 
 class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -61,7 +63,7 @@ class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        return reverse_lazy('users:user_profile', kwargs={'user_id': self.request.user.id})
+        return reverse('users:user_profile', kwargs={'user_id': self.request.user.id})
 
     def form_valid(self, form):
         messages.success(self.request, 'Профиль успешно обновлён!')

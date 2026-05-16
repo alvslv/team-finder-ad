@@ -1,12 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from core.constants import (
-    MAX_LENGTH_NAME,
-    MAX_LENGTH_SURNAME,
-    MAX_LENGTH_PHONE,
-    MAX_LENGTH_ABOUT,
-)
+from django.db import models
+
+from core.constants import MAX_LENGTH_ABOUT, MAX_LENGTH_NAME, MAX_LENGTH_PHONE, MAX_LENGTH_SURNAME
 from core.validators import phone_validator, validate_github_url
+
 from .managers import UserManager
 
 

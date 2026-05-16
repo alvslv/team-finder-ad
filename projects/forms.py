@@ -2,6 +2,7 @@ from django import forms
 
 from core.constants import MAX_LENGTH_PROJECT_NAME
 from core.validators import validate_github_url
+
 from .models import Project
 
 

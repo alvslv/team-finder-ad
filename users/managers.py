@@ -1,4 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
+
 from core.services import generate_avatar
 
 

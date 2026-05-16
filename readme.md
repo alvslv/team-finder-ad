@@ -77,4 +77,4 @@ TeamFinder — это веб-приложение для поиска едино
 
 ## Автор
 
-alvslv
+- GitHub: https://github.com/alvslv

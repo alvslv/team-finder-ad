@@ -1,11 +1,6 @@
 from django.db import models
-from core.constants import (
-    MAX_LENGTH_PROJECT_NAME,
-    MAX_LENGTH_STATUS,
-    STATUS_OPEN,
-    STATUS_CLOSED,
-    STATUS_CHOICES,
-)
+
+from core.constants import MAX_LENGTH_PROJECT_NAME, MAX_LENGTH_STATUS, STATUS_CHOICES, STATUS_OPEN
 from core.validators import validate_github_url
 
 

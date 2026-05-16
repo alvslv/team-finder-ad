@@ -98,5 +98,3 @@ AUTH_USER_MODEL = "users.User"
 
 # Перенаправления для аутентификации (используем names)
 LOGIN_URL = "users:login"
-LOGIN_REDIRECT_URL = "projects:project_list"
-LOGOUT_REDIRECT_URL = "projects:project_list"
