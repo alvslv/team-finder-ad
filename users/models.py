@@ -1,7 +1,12 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 
-from core.constants import MAX_LENGTH_ABOUT, MAX_LENGTH_NAME, MAX_LENGTH_PHONE, MAX_LENGTH_SURNAME
+from core.constants import (
+    MAX_LENGTH_ABOUT,
+    MAX_LENGTH_NAME,
+    MAX_LENGTH_PHONE,
+    MAX_LENGTH_SURNAME,
+)
 from core.validators import phone_validator, validate_github_url
 
 from .managers import UserManager
@@ -31,8 +36,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name', 'surname']
 
-    def get_full_name(self):
-        return f"{self.name} {self.surname}"
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.email
+
+    def get_full_name(self):
+        return f"{self.name} {self.surname}"

@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.generic import CreateView, UpdateView
 
 from core.constants import USERS_PER_PAGE
+from core.services import paginate
 from projects.models import Project
 
 from .forms import RegisterForm, UserProfileForm
@@ -91,9 +92,7 @@ def user_list(request):
         elif active_filter == 'my_project_members':
             my_projects = Project.objects.filter(owner=request.user)
             users = UserModel.objects.filter(participated_projects__in=my_projects).distinct()
-    paginator = Paginator(users, USERS_PER_PAGE)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate(request, users, per_page=USERS_PER_PAGE)
     return render(request, 'users/user_list.html', {
         'page_obj': page_obj,
         'active_filter': active_filter

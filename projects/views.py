@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import CreateView, UpdateView
 
-from core.constants import PROJECTS_PER_PAGE, STATUS_CLOSED, STATUS_OPEN
+from core.constants import STATUS_CLOSED, STATUS_OPEN
 from core.services import paginate
 
 from .forms import ProjectForm
@@ -19,7 +20,7 @@ def project_list(request):
     favorites_ids = []
     if request.user.is_authenticated:
         favorites_ids = request.user.favorites.values_list('id', flat=True)
-    page_obj = paginate(projects, PROJECTS_PER_PAGE, request.GET.get('page'))
+    page_obj = paginate(request, projects)
     return render(request, 'projects/project_list.html', {
         'page_obj': page_obj,
         'favorites_ids': list(favorites_ids),
@@ -31,13 +32,10 @@ def project_detail(request, project_id):
     return render(request, 'projects/project-details.html', {'project': project})
 
 
-class ProjectCreateView(CreateView):
+class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
     form_class = ProjectForm
     template_name = 'projects/create-project.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -50,7 +48,7 @@ class ProjectCreateView(CreateView):
         return reverse('projects:project_detail', kwargs={'project_id': self.object.id})
 
 
-class ProjectUpdateView(UpdateView):
+class ProjectUpdateView(LoginRequiredMixin, UpdateView):
     model = Project
     form_class = ProjectForm
     template_name = 'projects/create-project.html'

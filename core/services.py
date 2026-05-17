@@ -1,8 +1,9 @@
 """Вспомогательные функции для проекта."""
 
 import random
+from django.core.paginator import Paginator
 
-from core.constants import AVATAR_BG_COLORS, DEFAULT_AVATAR_SIZE
+from core.constants import DEFAULT_AVATAR_SIZE, AVATAR_BG_COLORS
 
 
 def generate_avatar(name, surname):
@@ -14,10 +15,12 @@ def generate_avatar(name, surname):
     bg_color = random.choice(AVATAR_BG_COLORS)
     return f'https://ui-avatars.com/api/?name={letter}&background={bg_color}&color=fff&size={DEFAULT_AVATAR_SIZE}'
 
-from django.core.paginator import Paginator
 
-
-def paginate(queryset, per_page, page_number):
-    """Возвращает объект пагинации для queryset."""
+def paginate(request, queryset, per_page=12):
+    """
+    Возвращает объект пагинации для queryset.
+    page_number берётся из GET-параметра 'page'.
+    """
+    page_number = request.GET.get('page')
     paginator = Paginator(queryset, per_page)
     return paginator.get_page(page_number)
